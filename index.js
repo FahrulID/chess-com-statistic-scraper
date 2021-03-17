@@ -43,7 +43,6 @@ class scraper
     async scrape(pageNumber)
     {
         var linkToGo = this._chessComLink + pageNumber;
-        var stats = {};
 
         const page = await this._browser.newPage();
 
@@ -78,6 +77,10 @@ class scraper
                 var akurasi2 = elementPath + ` > td.table-text-center.archive-games-analyze-cell > div:nth-child(3)`;
                 var moves = elementPath + ` > td.table-text-center > span`;
                 var date = elementPath + ` > td.table-text-right.archive-games-date-cell`;
+                var banned1 = elementPath + ` > td.archive-games-user-cell > div.archive-games-user-wrapper > div.archive-games-users > div.archive-games-user-tagline:nth-child(1) > div.post-view-meta-user > a.user-flair.flair-link > span.v-tooltip.flair-component.flair-blocked`;
+                var banned2 = elementPath + ` > td.archive-games-user-cell > div.archive-games-user-wrapper > div.archive-games-users > div.archive-games-user-tagline:nth-child(2) > div.post-view-meta-user > a.user-flair.flair-link > span.v-tooltip.flair-component.flair-blocked`;
+                var negara1 = elementPath + ` > td.archive-games-user-cell > div.archive-games-user-wrapper > div.archive-games-users > div.archive-games-user-tagline:nth-child(1) > div.post-view-meta-user > div.v-tooltip.country-flags-component`;
+                var negara2 = elementPath + ` > td.archive-games-user-cell > div.archive-games-user-wrapper > div.archive-games-users > div.archive-games-user-tagline:nth-child(2) > div.post-view-meta-user > div.v-tooltip.country-flags-component`;
                 element = await page.$(elementPath);
 
                 if(element !== null)
@@ -93,6 +96,10 @@ class scraper
                     var setatakurasi2 = await page.$(akurasi2);
                     var setatmoves = await page.$(moves);
                     var setatdate = await page.$(date);
+                    var setatbanned1 = await page.$(banned1);
+                    var setatbanned2 = await page.$(banned2);
+                    var setatnegara1 = await page.$(negara1);
+                    var setatnegara2 = await page.$(negara2);
     
                     setat.time = await page.evaluate(el => el.textContent, setattime);
                     setat.pemain1 = await page.evaluate(el => el.textContent, setatpemain1);
@@ -105,15 +112,22 @@ class scraper
                     setat.akurasi2 = await page.evaluate(el => el.textContent, setatakurasi2);
                     setat.moves = await page.evaluate(el => el.textContent, setatmoves);
                     setat.date = await page.evaluate(el => el.textContent, setatdate);
+                    setat.banned1 = (setatbanned1 !== null) ? true : false;
+                    setat.banned2 = (setatbanned2 !== null) ? true : false;
+                    
+                    var angkaNegara1 = await setatnegara1.getProperty('className') + '';
+                    var angkaNegara2 = await setatnegara2.getProperty('className') + '';
+                    setat.negara1 = angkaNegara1.split(" ")[2].split("-")[1];
+                    setat.negara2 = angkaNegara2.split(" ")[2].split("-")[1];
 
-                    setat.time = setat.time.replace(/[\t\n\    ]+/g,'')
-                    setat.pemain1 = setat.pemain1.replace(/[\t\n\    ]+/g,'')
-                    setat.pemain2 = setat.pemain2.replace(/[\t\n\    ]+/g,'')
-                    setat.date = setat.date.replace(/[\t\n\    ]+/g,'')
+                    setat.time = setat.time.replace(/[\t\n\    ]+/g,'');
+                    setat.pemain1 = setat.pemain1.replace(/[\t\n\    ]+/g,'');
+                    setat.pemain2 = setat.pemain2.replace(/[\t\n\    ]+/g,'');
+                    setat.date = setat.date.replace(/[\t\n\    ]+/g,'');
+                    setat.negara1 = setat.negara1.replace(/[\t\n\    ]+/g,'');
+                    setat.negara2 = setat.negara2.replace(/[\t\n\    ]+/g,'');
     
-                    stats[this._x] = setat;
-    
-                    this._statistics.push(stats);
+                    this._statistics[this._x] = setat;
                     
                     x++;
                     this._x++;
